@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Get, Post, Patch, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { SnippetsService } from './snippets.service';
-import { CreateSnippetDto } from './create-snippet.dto';
+import { CreateSnippetDto } from './dto/create-snippet.dto';
 import type { Snippet } from './snippet';
+import { UpdateSnippetDto } from './dto/update-snippet.dto';
 
 @Controller('snippets')
 export class SnippetsController {
@@ -20,6 +21,11 @@ export class SnippetsController {
     @Post()
     create(@Body() createSnippetDto: CreateSnippetDto): Promise<Snippet> {
         return this.snippetService.create(createSnippetDto);
+    }
+
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() updateSnippetDto: UpdateSnippetDto): Promise<Snippet> {
+        return this.snippetService.update(id, updateSnippetDto);
     }
 
     @Delete(':id')

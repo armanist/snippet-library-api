@@ -1,5 +1,5 @@
 import { IsArray, IsIn, IsString, MinLength } from "class-validator";
-import { LANGUAGES, type Language } from "./snippet";
+import { LANGUAGES, type Language } from "../snippet";
 
 export class CreateSnippetDto {
     @IsString()
