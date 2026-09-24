@@ -1,4 +1,4 @@
-import {Column, Entity, PrimaryColumn } from 'typeorm';
+import {Column, CreateDateColumn, Entity, PrimaryColumn } from 'typeorm';
 import type { Language } from './snippet';
 
 @Entity('snippets')
@@ -17,4 +17,7 @@ export class SnippetEntity {
 
     @Column('simple-json')
     tags!: string[];
+
+    @CreateDateColumn()
+    createdAt!: Date
 }

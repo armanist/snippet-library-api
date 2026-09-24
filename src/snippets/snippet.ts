@@ -14,4 +14,5 @@ export interface Snippet {
     language: Language;
     code: string;
     tags: string[];
+    createdAt: Date;
 }
