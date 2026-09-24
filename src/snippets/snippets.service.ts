@@ -10,9 +10,22 @@ import type { UpdateSnippetDto } from './dto/update-snippet.dto';
 export class SnippetsService {
     constructor(@InjectRepository(SnippetEntity) private readonly snippetRepository: Repository<SnippetEntity>) { }
 
-    findAll(): Promise<SnippetEntity[]> {
-        return this.snippetRepository.find();
-    }
+    findAll(search?: string): Promise<SnippetEntity[]> {
+        const normalizedSearch = search?.trim().toLowerCase();
+
+        if(!normalizedSearch) {
+            return this.snippetRepository.find();
+        }
+
+        return this.snippetRepository
+            .createQueryBuilder('snippet')
+            .where('LOWER(snippet.title) LIKE :search')
+            .orWhere('LOWER(snippet.language) LIKE :search')
+            .orWhere('LOWER(snippet.code) LIKE :search')
+            .orWhere('LOWER(snippet.tags) LIKE :search')
+            .setParameter('search', `%${normalizedSearch}%`)
+            .getMany()
+        }
 
     async findOne(id: string): Promise<SnippetEntity> {
         const snippet = await this.snippetRepository.findOneBy({ id });

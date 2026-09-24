@@ -1,16 +1,27 @@
-import { Body, Controller, Get, Post, Patch, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import {  
+    Controller, 
+    Get, 
+    Post, 
+    Patch, 
+    Delete, 
+    Param, 
+    Query,
+    Body,
+    HttpCode, 
+    HttpStatus } from '@nestjs/common';
 import { SnippetsService } from './snippets.service';
 import { CreateSnippetDto } from './dto/create-snippet.dto';
-import type { Snippet } from './snippet';
 import { UpdateSnippetDto } from './dto/update-snippet.dto';
+import { QuerySnippetDto } from './dto/query-snippet.dto';
+import type { Snippet } from './snippet';
 
 @Controller('snippets')
 export class SnippetsController {
     constructor(private readonly snippetService: SnippetsService) {}
 
     @Get()
-    getAll(): Promise<Snippet[]> {
-        return this.snippetService.findAll();
+    getAll(@Query() query: QuerySnippetDto): Promise<Snippet[]> {
+        return this.snippetService.findAll(query.search);
     }
 
     @Get(':id')
