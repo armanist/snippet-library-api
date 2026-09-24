@@ -1,12 +1,14 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   app.enableCors({
-    origin: 'http://localhost:4200',
+    origin: configService.getOrThrow<string>('ANGULAR_ORIGIN'),
   });
 
   app.useGlobalPipes(
@@ -16,7 +18,9 @@ async function bootstrap(): Promise<void> {
     })
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+const port = Number(configService.getOrThrow<string>('PORT'));
+
+  await app.listen(port);
 }
 
 bootstrap();
