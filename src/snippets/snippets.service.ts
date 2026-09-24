@@ -5,27 +5,44 @@ import { SnippetEntity } from './snippet.entity';
 import { Repository } from 'typeorm';
 import type { CreateSnippetDto } from './dto/create-snippet.dto';
 import type { UpdateSnippetDto } from './dto/update-snippet.dto';
+import type { FindSnippetsOptions, FindSnippetsResult } from './snippet';
 
 @Injectable()
 export class SnippetsService {
     constructor(@InjectRepository(SnippetEntity) private readonly snippetRepository: Repository<SnippetEntity>) { }
 
-    findAll(search?: string): Promise<SnippetEntity[]> {
-        const normalizedSearch = search?.trim().toLowerCase();
+    async findAll(options: FindSnippetsOptions): Promise<FindSnippetsResult> {
+        const normalizedSearch = options.search?.trim().toLowerCase();
+        const page = options.page ?? 1;
+        const limit = options.limit ?? 20;
 
-        if(!normalizedSearch) {
-            return this.snippetRepository.find();
+        const query = this.snippetRepository.createQueryBuilder('snippet');
+
+        if (normalizedSearch) {
+            query
+                .where('LOWER(snippet.title) LIKE :search')
+                .orWhere('LOWER(snippet.language) LIKE :search')
+                .orWhere('LOWER(snippet.code) LIKE :search')
+                .orWhere('LOWER(snippet.tags) LIKE :search')
+                .setParameter('search', `%${normalizedSearch}%`);
         }
 
-        return this.snippetRepository
-            .createQueryBuilder('snippet')
-            .where('LOWER(snippet.title) LIKE :search')
-            .orWhere('LOWER(snippet.language) LIKE :search')
-            .orWhere('LOWER(snippet.code) LIKE :search')
-            .orWhere('LOWER(snippet.tags) LIKE :search')
-            .setParameter('search', `%${normalizedSearch}%`)
-            .getMany()
-        }
+        query
+            .skip((page - 1) * limit)
+            .take(limit);
+
+        const [snippets, total] = await query.getManyAndCount();
+
+        return {
+            snippets,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
 
     async findOne(id: string): Promise<SnippetEntity> {
         const snippet = await this.snippetRepository.findOneBy({ id });
@@ -48,7 +65,7 @@ export class SnippetsService {
 
     async update(id: string, updateSnippetDto: UpdateSnippetDto): Promise<SnippetEntity> {
         const snippet = await this.findOne(id);
-        
+
         Object.assign(snippet, updateSnippetDto);
 
         await this.snippetRepository.save(snippet);
