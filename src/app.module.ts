@@ -16,7 +16,7 @@ import { SnippetsModule } from './snippets/snippets.module';
         type: 'better-sqlite3',
         database: configService.getOrThrow<string>('DATABASE_PATH'),
         entities: [SnippetEntity],
-        synchronize: true,
+        synchronize: false,
       }),
     }),
 
